@@ -1,0 +1,3 @@
+[submodule "au-engine"]
+	path = au-engine
+	url = https://github.com/ryanisaacg/au-engine

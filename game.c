@@ -9,7 +9,7 @@ typedef struct {
 	AU_Circle size;
 	AU_Vector speed, accel;
 	bool slamming;
-	int health;
+	int health, iframes;
 } Player;
 
 typedef struct {
@@ -74,6 +74,9 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	}
 	player->size.x += player->speed.x;
 	player->size.y += player->speed.y;
+	if(player->iframes > 0) {
+		player->iframes--;
+	}
 }
 
 static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* player) {
@@ -95,7 +98,10 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 		if(player->slamming) {
 			return true;
 		} else {
-			player->health--;
+			if(player->iframes <= 0) {
+				player->health--;
+				player->iframes = 60;
+			}
 		}
 	}
 	return false;
@@ -128,7 +134,9 @@ void game_loop(AU_Engine* eng) {
 				eng->current_keys[SDL_SCANCODE_S] && !eng->previous_keys[SDL_SCANCODE_S]);
 		eng->camera.x = player.size.x - eng->camera.width / 2;
 		eng->camera.y = player.size.y - eng->camera.height / 2;
-		au_draw_circle(eng, AU_BLUE, player.size);
+		AU_Color col = AU_BLUE;
+		if(player.iframes > 0) col.r = 0.5f;
+		au_draw_circle(eng, col, player.size);
 		for(size_t i = 0; i < num_planets; i++) {
 			au_draw_circle(eng, AU_GREEN, planets[i].size);
 		}

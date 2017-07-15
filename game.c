@@ -16,7 +16,7 @@ static AU_Vector pointer(Player* player, Planet* planet) {
 	return au_geom_vec_sub(planet_center, player_center);
 }
 	
-static void player_update(Player* player, Planet* planets, size_t length, bool left, bool right) {
+static void player_update(Player* player, Planet* planets, size_t length, bool left, bool right, bool up) {
 	Planet* closest = planets;
 	float closest_len = au_geom_vec_len(pointer(player, planets));
 	for(size_t i = 1; i < length; i++) {
@@ -31,11 +31,14 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	float rad = player->size.radius + closest->size.radius;
 	player->accel = gravity;
 	player->speed = au_geom_vec_add(player->speed, player->accel);
+	bool supported = false;
 	if(au_geom_vec_len2(pointer(player, closest)) <= rad * rad) {
 		player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_pointer, au_geom_vec_dot(player->speed, unit_pointer)));
+		supported = true;
 	}
-	const float walk_speed = 0.25;
+	const float walk_speed = 3;
 	AU_Vector unit_left = { unit_pointer.y, -unit_pointer.x };
+	player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_left, au_geom_vec_dot(player->speed, unit_left)));
 	if(left) {
 		AU_Vector left = au_geom_vec_scl(unit_left, walk_speed);
 		player->speed = au_geom_vec_add(player->speed, left);
@@ -43,6 +46,9 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	if(right) { 
 		AU_Vector right = au_geom_vec_scl(unit_left, -walk_speed);
 		player->speed = au_geom_vec_add(player->speed, right);
+	}
+	if(up && supported) {
+		player->speed = au_geom_vec_add(player->speed, au_geom_vec_scl(unit_pointer, -8));
 	}
 	player->size.x += player->speed.x;
 	player->size.y += player->speed.y;
@@ -52,12 +58,13 @@ void game_loop(AU_Engine* eng) {
 	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 } };
 	Planet planets[] = {
 		{ { 100, 400, 128 }, 0.05f },
-		{ { 600, 400, 128}, 0.05f },
+		{ { 600, 400, 128}, 0.25f },
 	};
 	size_t num_planets = sizeof(planets) / sizeof(planets[0]);
 	while(eng->should_continue) {
 		au_begin(eng, AU_WHITE);
-		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D]);
+		player_update(&player, planets, num_planets, 
+				eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D], eng->current_keys[SDL_SCANCODE_W]);
 		au_draw_circle(eng, AU_RED, player.size);
 		for(size_t i = 0; i < num_planets; i++) {
 			au_draw_circle(eng, AU_BLUE, planets[i].size);

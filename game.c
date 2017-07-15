@@ -113,9 +113,10 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 void game_loop(AU_Engine* eng) {
 	//Load game assets
 	AU_AnimatedSprite player_sprite = au_sprite_anim_new(load_player_textures(eng));
-	au_anim_manager_switch(&player_sprite.animations, player_stand);
+	player_sprite.transform.origin_x = -player_sprite.transform.width / 2;
+	player_sprite.transform.origin_y = -player_sprite.transform.height / 2;
 	//Create game entities
-	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 }, false, 100 };
+	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100 };
 	const size_t num_planets = 500;
 	Planet* planets = malloc(sizeof(Planet) * num_planets);
 	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f };

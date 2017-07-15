@@ -37,7 +37,7 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 		supported = true;
 	}
 	const float walk_speed = 3;
-	AU_Vector unit_left = { unit_pointer.y, -unit_pointer.x };
+	AU_Vector unit_left = { -unit_pointer.y, unit_pointer.x };
 	player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_left, au_geom_vec_dot(player->speed, unit_left)));
 	if(left) {
 		AU_Vector left = au_geom_vec_scl(unit_left, walk_speed);
@@ -57,7 +57,7 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 void game_loop(AU_Engine* eng) {
 	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 } };
 	Planet planets[] = {
-		{ { 100, 400, 128 }, 0.05f },
+		{ { 100, 400, 128 }, 0.25f },
 		{ { 600, 400, 128}, 0.25f },
 	};
 	size_t num_planets = sizeof(planets) / sizeof(planets[0]);

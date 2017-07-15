@@ -65,6 +65,7 @@ void game_loop(AU_Engine* eng) {
 	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 } };
 	Planet planets[] = {
 		{ { 100, 400, 128 }, 0.25f },
+		{ { 400, 100, 128 }, 0.25f },
 		{ { 600, 400, 128}, 0.25f },
 	};
 	size_t num_planets = sizeof(planets) / sizeof(planets[0]);

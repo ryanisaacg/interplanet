@@ -64,12 +64,15 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 
 void game_loop(AU_Engine* eng) {
 	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 } };
-	Planet planets[] = {
-		{ { 100, 400, 128 }, 0.25f },
-		{ { 400, 100, 128 }, 0.25f },
-		{ { 600, 400, 128}, 0.25f },
-	};
-	size_t num_planets = sizeof(planets) / sizeof(planets[0]);
+	const size_t num_planets = 1000;
+	Planet* planets =  malloc(sizeof(Planet) * num_planets);
+	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f };
+	for(size_t i = 1; i < 1000; i++) {
+		planets[i].size.x = au_util_randf_range(-5000, 5000);
+		planets[i].size.y = au_util_randf_range(-5000, 5000);
+		planets[i].size.radius = 128;
+		planets[i].gravity = 0.25f;
+	}
 	while(eng->should_continue) {
 		au_begin(eng, AU_WHITE);
 		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D], 

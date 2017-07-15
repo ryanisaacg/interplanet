@@ -1,9 +1,30 @@
-- Rotate the camera so the player is always facing up
-- Jetpack for when the player is out of the planet's gravitational field
-- Place planets with a better algorithm
-- Space eels that move between planets
-- Breakable planets with rewards
-- Planets that can hurt you
-- Fixed point hazards
-- Enemies that stick closely to the surface of planets
-- Portals that move you to the next level
+- Game design
+	- Rotate the camera so the player is always facing up
+	- Jetpack for when the player is out of the planet's gravitational field
+	- Place planets with a better algorithm
+	- Space eels that move between planets
+	- Breakable planets with rewards
+	- Planets that can hurt you
+	- Fixed point hazards
+	- Enemies that stick closely to the surface of planets
+	- Portals that move you to the next level
+- Art assets
+	- Ground enemies
+	- Air enemies
+	- Space eels enemies
+	- Planets
+	- Breakable planets
+	- Lava planets
+	- Wormholes
+	- Particles
+- SFX assets
+	- Jump sound
+	- Ground pound sound
+	- Hit sound when hit by enemies
+	- Hit sound when enemies are damaged
+- Space music
+	- Track 1
+	- Track 2
+	- Track 3
+	- Track 4
+	- Track 5

@@ -16,6 +16,9 @@ typedef struct {
 	AU_Circle size;
 } Enemy;
 
+static AU_AnimationManager load_player_textures();
+static int player_jump, player_pound, player_stand, player_walk;
+
 static AU_Vector pointer(Player* player, Planet* planet) {
 	AU_Vector player_center = (AU_Vector) { player->size.x, player->size.y };
 	AU_Vector planet_center = (AU_Vector) { planet->size.x, planet->size.y };
@@ -108,6 +111,10 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 }
 
 void game_loop(AU_Engine* eng) {
+	//Load game assets
+	AU_AnimatedSprite player_sprite = au_sprite_anim_new(load_player_textures(eng));
+	au_anim_manager_switch(&player_sprite.animations, player_stand);
+	//Create game entities
 	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 }, false, 100 };
 	const size_t num_planets = 500;
 	Planet* planets = malloc(sizeof(Planet) * num_planets);
@@ -127,6 +134,7 @@ void game_loop(AU_Engine* eng) {
 		enemies[i].size.y = au_util_randf_range(-5000, 5000);
 		enemies[i].size.radius = 16;
 	}
+	//Main loop
 	while(eng->should_continue) {
 		au_begin(eng, AU_WHITE);
 		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D], 
@@ -136,7 +144,9 @@ void game_loop(AU_Engine* eng) {
 		eng->camera.y = player.size.y - eng->camera.height / 2;
 		AU_Color col = AU_BLUE;
 		if(player.iframes > 0) col.r = 0.5f;
-		au_draw_circle(eng, col, player.size);
+		player_sprite.transform.x = player.size.x - player_sprite.transform.width / 2;
+		player_sprite.transform.y = player.size.y - player_sprite.transform.height / 2;
+		au_draw_sprite_animated(eng, &player_sprite);
 		for(size_t i = 0; i < num_planets; i++) {
 			au_draw_circle(eng, AU_GREEN, planets[i].size);
 		}
@@ -152,4 +162,36 @@ void game_loop(AU_Engine* eng) {
 		}
 		au_end(eng);
 	}
+}
+
+static AU_AnimationManager load_player_textures(AU_Engine* eng) {
+	AU_Texture jump = au_load_texture(eng, "assets/assets/jump.png");
+	AU_Texture pound = au_load_texture(eng, "assets/assets/pound.png");
+	AU_Texture stand = au_load_texture(eng, "assets/assets/stand_cycle.png");
+	AU_Texture walk = au_load_texture(eng, "assets/assets/walk_cycle.png");
+	AU_Animation jump_anim = au_anim_new(au_tex_region(jump), 1);
+	AU_Animation pound_anim = au_anim_new(au_tex_region(pound), 1);
+	AU_TextureRegion stand_region = au_tex_region(stand);
+	AU_TextureRegion walk_region = au_tex_region(walk);
+	AU_TextureRegion stand_frames[4];
+	for(size_t i = 0; i < 4; i++) {
+		AU_TextureRegion frame = stand_region;
+		frame.rect = (AU_Rectangle) { i * 32, 0, 32, 32 };
+		stand_frames[i] = frame;
+	}
+	AU_Animation stand_anim = au_anim_from_array(stand_frames, 4, 10);
+	AU_TextureRegion walk_frames[4];
+	for(size_t i = 0; i < 4; i++) {
+		AU_TextureRegion frame = walk_region;
+		frame.rect = (AU_Rectangle) { i * 32, 0, 32, 32};
+		walk_frames[i] = frame;
+	}
+	AU_Animation walk_anim = au_anim_from_array(walk_frames, 4, 10);
+	AU_AnimationManager manager = au_anim_manager_new();
+	player_jump = au_anim_manager_register(&manager, &jump_anim);
+	player_pound = au_anim_manager_register(&manager, &pound_anim);
+	player_walk = au_anim_manager_register(&manager, &walk_anim);
+	player_stand = au_anim_manager_register(&manager, &stand_anim);
+	au_anim_manager_switch(&manager, player_jump);
+	return manager;
 }

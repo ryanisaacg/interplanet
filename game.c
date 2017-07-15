@@ -35,6 +35,10 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	if(au_geom_vec_len2(pointer(player, closest)) <= rad * rad) {
 		player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_pointer, au_geom_vec_dot(player->speed, unit_pointer)));
 		supported = true;
+		float difference = rad - au_geom_vec_len(pointer(player, closest));
+		AU_Vector embed = au_geom_vec_scl(unit_pointer, -difference);
+		player->size.x += embed.x;
+		player->size.y += embed.y;
 	}
 	const float walk_speed = 3;
 	AU_Vector unit_left = { -unit_pointer.y, unit_pointer.x };

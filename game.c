@@ -142,6 +142,8 @@ void game_loop(AU_Engine* eng) {
 	hurt_sound = au_sound_load("assets/assets/hurt.wav");
 	land_sound = au_sound_load("assets/assets/land.wav");
 	hit_sound = au_sound_load("assets/assets/kill.wav");
+	au_sound_play(au_sound_load("assets/assets/background.wav"), 0);
+	printf("%s\n", Mix_GetError());
 	//Create game entities
 	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100, 0};
 	const size_t num_planets = 500;

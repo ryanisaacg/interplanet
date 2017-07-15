@@ -5,6 +5,7 @@
 typedef struct {
 	AU_Circle size;
 	float gravity;
+	AU_Sprite sprite;
 } Planet;
 
 typedef struct {
@@ -152,17 +153,33 @@ void game_loop(AU_Engine* eng) {
 	land_sound = au_sound_load("assets/assets/land.wav");
 	hit_sound = au_sound_load("assets/assets/kill.wav");
 	au_sound_play(au_sound_load("assets/assets/background.wav"), 0);
-	printf("%s\n", Mix_GetError());
+	AU_Texture planet_texture = au_load_texture(eng, "assets/assets/planet0.png");
 	//Create game entities
 	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100, 0};
 	const size_t num_planets = 500;
 	Planet* planets = malloc(sizeof(Planet) * num_planets);
+	AU_Sprite first = au_sprite_new(au_tex_region(planet_texture));
+	first.transform.x = 100 - first.transform.width / 2;
+	first.transform.y = 400 - first.transform.height / 2;
+	first.transform.origin_x = 100;
+	first.transform.origin_y = 400;
+	first.transform.rotation = au_util_randf_range(0, 360);
 	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f };
+	float depth = 1;
 	for(size_t i = 1; i < num_planets; i++) {
 		planets[i].size.x = au_util_randf_range(-5000, 5000);
 		planets[i].size.y = au_util_randf_range(-5000, 5000);
 		planets[i].size.radius = 128;
 		planets[i].gravity = 0.25f;
+		AU_Sprite sprite = au_sprite_new(au_tex_region(planet_texture));
+		sprite.transform.x = planets[i].size.x - sprite.transform.width / 2;
+		sprite.transform.y = planets[i].size.y - sprite.transform.height / 2;
+		sprite.transform.origin_x = planets[i].size.x;
+		sprite.transform.origin_y = planets[i].size.y;
+		sprite.transform.rotation = au_util_randf_range(0, 360);
+		sprite.transform.depth = depth;
+		depth -= 1.0f / num_planets;
+		planets[i].sprite = sprite;
 	}
 	size_t num_enemies = 500;
 	size_t enemy_capacity = 500;
@@ -191,7 +208,7 @@ void game_loop(AU_Engine* eng) {
 		player_sprite.transform.origin_y = player_sprite.transform.y + player_sprite.transform.height / 2;
 		au_draw_sprite_animated(eng, &player_sprite);
 		for(size_t i = 0; i < num_planets; i++) {
-			au_draw_circle(eng, AU_GREEN, planets[i].size);
+			au_draw_sprite(eng, &(planets[i].sprite));
 		}
 		for(size_t i = 0; i < num_enemies; i++) {
 			bool killed = enemy_update(enemies + i, planets, num_planets, &player);
@@ -245,7 +262,7 @@ static AU_AnimationManager load_enemy_textures(AU_Engine* eng, AU_Texture tex) {
 	AU_TextureRegion frames[4];
 	for(size_t i = 0; i < 4; i++) {
 		AU_TextureRegion frame = region;
-		frame.rect = (AU_Rectangle) { i * 24, 0, 24, 24};
+		frame.rect = (AU_Rectangle) { i * 32, 0, 32, 32};
 		frames[i] = frame;
 	}
 	AU_AnimationManager manager = au_anim_manager_new();

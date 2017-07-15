@@ -1,3 +1,9 @@
 - Rotate the camera so the player is always facing up
 - Jetpack for when the player is out of the planet's gravitational field
 - Place planets with a better algorithm
+- Space eels that move between planets
+- Breakable planets with rewards
+- Planets that can hurt you
+- Fixed point hazards
+- Enemies that stick closely to the surface of planets
+- Portals that move you to the next level

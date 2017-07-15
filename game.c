@@ -19,6 +19,7 @@ typedef struct {
 } Enemy;
 
 static AU_AnimationManager load_player_textures();
+static AU_Sound jump_sound, hurt_sound, hit_sound, land_sound;
 static int player_jump, player_pound, player_stand, player_walk;
 
 static AU_Vector pointer(Player* player, Planet* planet) {
@@ -58,7 +59,10 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 		player->size.y += embed.y;
 	}
 	supported = au_geom_vec_len2(pointer(player, closest)) - 10 <= rad * rad;
-	player->slamming = player->slamming && !supported;
+	if(supported && player->slamming) {
+		player->slamming = false;
+		au_sound_play(land_sound, 1);
+	}
 	const float walk_speed = 3;
 	AU_Vector unit_left = { -unit_pointer.y, unit_pointer.x };
 	player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_left, au_geom_vec_dot(player->speed, unit_left)));
@@ -74,6 +78,7 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	}
 	if(up && supported) {
 		player->speed = au_geom_vec_add(player->speed, au_geom_vec_scl(unit_pointer, -8));
+		au_sound_play(jump_sound, 1);
 	}
 	if(down && !supported && !player->slamming) {
 		player->speed = au_geom_vec_add(player->speed, au_geom_vec_scl(unit_pointer, 8));
@@ -117,11 +122,13 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 	enemy->size.y += right.y;
 	if(au_geom_circ_overlaps_circ(player->size, enemy->size)) {
 		if(player->slamming) {
+			au_sound_play(hit_sound, 1);
 			return true;
 		} else {
 			if(player->iframes <= 0) {
 				player->health--;
 				player->iframes = 60;
+				au_sound_play(hurt_sound, 1);
 			}
 		}
 	}
@@ -131,6 +138,10 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 void game_loop(AU_Engine* eng) {
 	//Load game assets
 	AU_AnimatedSprite player_sprite = au_sprite_anim_new(load_player_textures(eng));
+	jump_sound = au_sound_load("assets/assets/jump.wav");
+	hurt_sound = au_sound_load("assets/assets/hurt.wav");
+	land_sound = au_sound_load("assets/assets/land.wav");
+	hit_sound = au_sound_load("assets/assets/kill.wav");
 	//Create game entities
 	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100, 0};
 	const size_t num_planets = 500;
@@ -180,6 +191,7 @@ void game_loop(AU_Engine* eng) {
 			}
 			au_draw_circle(eng, AU_RED, enemies[i].size);
 		}
+		printf("%s\n", Mix_GetError());
 		au_end(eng);
 	}
 }

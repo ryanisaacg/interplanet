@@ -95,6 +95,7 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 			au_anim_manager_switch(&sprite->animations, player_jump);
 		}
 	}
+	sprite->transform.rotation = atan2(unit_pointer.y, unit_pointer.x) * 180 / M_PI + 90;
 }
 
 static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* player) {
@@ -128,8 +129,6 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 void game_loop(AU_Engine* eng) {
 	//Load game assets
 	AU_AnimatedSprite player_sprite = au_sprite_anim_new(load_player_textures(eng));
-	player_sprite.transform.origin_x = -player_sprite.transform.width / 2;
-	player_sprite.transform.origin_y = -player_sprite.transform.height / 2;
 	//Create game entities
 	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100, 0};
 	const size_t num_planets = 500;
@@ -163,6 +162,8 @@ void game_loop(AU_Engine* eng) {
 		if(player.iframes > 0) col.r = 0.5f;
 		player_sprite.transform.x = player.size.x - player_sprite.transform.width / 2;
 		player_sprite.transform.y = player.size.y - player_sprite.transform.height / 2;
+		player_sprite.transform.origin_x = player_sprite.transform.x + player_sprite.transform.width / 2;
+		player_sprite.transform.origin_y = player_sprite.transform.y + player_sprite.transform.height / 2;
 		au_draw_sprite_animated(eng, &player_sprite);
 		for(size_t i = 0; i < num_planets; i++) {
 			au_draw_circle(eng, AU_GREEN, planets[i].size);

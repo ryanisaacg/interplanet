@@ -16,9 +16,11 @@ typedef struct {
 
 typedef struct {
 	AU_Circle size;
+	AU_AnimatedSprite sprite;
 } Enemy;
 
-static AU_AnimationManager load_player_textures();
+static AU_AnimationManager load_player_textures(AU_Engine* eng);
+static AU_AnimationManager load_enemy_textures(AU_Engine* eng, AU_Texture tex);
 static AU_Sound jump_sound, hurt_sound, hit_sound, land_sound;
 static int player_jump, player_pound, player_stand, player_walk;
 
@@ -132,12 +134,19 @@ static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* p
 			}
 		}
 	}
+	enemy->sprite.transform.rotation = atan2(unit_pointer.y, unit_pointer.x) * 180 / M_PI + 90;
+	enemy->sprite.transform.x = enemy->size.x - enemy->sprite.transform.width / 2;
+	enemy->sprite.transform.y = enemy->size.y - enemy->sprite.transform.height / 2;
+	enemy->sprite.transform.origin_x = enemy->sprite.transform.x + enemy->sprite.transform.width / 2;
+	enemy->sprite.transform.origin_y = enemy->sprite.transform.y + enemy->sprite.transform.height / 2;
+	enemy->sprite.transform.flip_x = true;
 	return false;
 }
 
 void game_loop(AU_Engine* eng) {
 	//Load game assets
 	AU_AnimatedSprite player_sprite = au_sprite_anim_new(load_player_textures(eng));
+	AU_Texture texture = au_load_texture(eng, "assets/assets/enemy.png"); 
 	jump_sound = au_sound_load("assets/assets/jump.wav");
 	hurt_sound = au_sound_load("assets/assets/hurt.wav");
 	land_sound = au_sound_load("assets/assets/land.wav");
@@ -158,11 +167,12 @@ void game_loop(AU_Engine* eng) {
 	size_t num_enemies = 500;
 	size_t enemy_capacity = 500;
 	Enemy* enemies = malloc(sizeof(Enemy) * num_enemies);
-	enemies[0] = (Enemy) { { 300, 400, 16 } };
+	enemies[0] = (Enemy) { { 300, 400, 16 }, au_sprite_anim_new(load_enemy_textures(eng, texture)) };
 	for(size_t i = 1; i < num_enemies; i++) {
 		enemies[i].size.x = au_util_randf_range(-5000, 5000);
 		enemies[i].size.y = au_util_randf_range(-5000, 5000);
 		enemies[i].size.radius = 16;
+		enemies[i].sprite = au_sprite_anim_new(load_enemy_textures(eng, texture));
 	}
 	//Main loop
 	while(eng->should_continue) {
@@ -191,7 +201,7 @@ void game_loop(AU_Engine* eng) {
 				i--;
 				continue;
 			}
-			au_draw_circle(eng, AU_RED, enemies[i].size);
+			au_draw_sprite_animated(eng, &(enemies[i].sprite));
 		}
 		printf("%s\n", Mix_GetError());
 		au_end(eng);
@@ -227,5 +237,19 @@ static AU_AnimationManager load_player_textures(AU_Engine* eng) {
 	player_walk = au_anim_manager_register(&manager, &walk_anim);
 	player_stand = au_anim_manager_register(&manager, &stand_anim);
 	au_anim_manager_switch(&manager, player_jump);
+	return manager;
+}
+
+static AU_AnimationManager load_enemy_textures(AU_Engine* eng, AU_Texture tex) {
+	AU_TextureRegion region = au_tex_region(tex);
+	AU_TextureRegion frames[4];
+	for(size_t i = 0; i < 4; i++) {
+		AU_TextureRegion frame = region;
+		frame.rect = (AU_Rectangle) { i * 24, 0, 24, 24};
+		frames[i] = frame;
+	}
+	AU_AnimationManager manager = au_anim_manager_new();
+	AU_Animation anim = au_anim_from_array(frames, 4, 10);	
+	au_anim_manager_switch(&manager, au_anim_manager_register(&manager, &anim));
 	return manager;
 }

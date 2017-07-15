@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include <stdio.h>
+
 typedef struct {
 	AU_Circle size;
 	float gravity;
@@ -39,7 +41,7 @@ static Planet* closest_planet(Player* player, Planet* planets, size_t length) {
 }
 
 	
-static void player_update(Player* player, Planet* planets, size_t length, bool left, bool right, bool up, bool down) {
+static void player_update(Player* player, Planet* planets, size_t length, bool left, bool right, bool up, bool down, AU_AnimatedSprite* sprite) {
 	Planet* closest = closest_planet(player, planets, length);
 	AU_Vector unit_pointer = au_geom_vec_nor(pointer(player, closest));
 	AU_Vector gravity = au_geom_vec_scl(unit_pointer, closest->gravity);
@@ -80,6 +82,19 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	if(player->iframes > 0) {
 		player->iframes--;
 	}
+	if(supported) {
+		if(left || right) {
+			au_anim_manager_switch(&sprite->animations, player_walk);
+		} else {
+			au_anim_manager_switch(&sprite->animations, player_stand);
+		}
+	} else {
+		if(player->slamming) {
+			au_anim_manager_switch(&sprite->animations, player_pound);
+		} else {
+			au_anim_manager_switch(&sprite->animations, player_jump);
+		}
+	}
 }
 
 static bool enemy_update(Enemy* enemy, Planet* planets, size_t length, Player* player) {
@@ -116,7 +131,7 @@ void game_loop(AU_Engine* eng) {
 	player_sprite.transform.origin_x = -player_sprite.transform.width / 2;
 	player_sprite.transform.origin_y = -player_sprite.transform.height / 2;
 	//Create game entities
-	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100 };
+	Player player = { { 400, 400, 16 }, { 0, 0 }, { 0, 0 }, false, 100, 0};
 	const size_t num_planets = 500;
 	Planet* planets = malloc(sizeof(Planet) * num_planets);
 	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f };
@@ -140,7 +155,8 @@ void game_loop(AU_Engine* eng) {
 		au_begin(eng, AU_WHITE);
 		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D], 
 				eng->current_keys[SDL_SCANCODE_W] && !eng->previous_keys[SDL_SCANCODE_W], 
-				eng->current_keys[SDL_SCANCODE_S] && !eng->previous_keys[SDL_SCANCODE_S]);
+				eng->current_keys[SDL_SCANCODE_S] && !eng->previous_keys[SDL_SCANCODE_S],
+				&player_sprite);
 		eng->camera.x = player.size.x - eng->camera.width / 2;
 		eng->camera.y = player.size.y - eng->camera.height / 2;
 		AU_Color col = AU_BLUE;

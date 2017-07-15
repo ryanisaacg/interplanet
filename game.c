@@ -65,10 +65,12 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	if(left) {
 		AU_Vector left = au_geom_vec_scl(unit_left, walk_speed);
 		player->speed = au_geom_vec_add(player->speed, left);
+		sprite->transform.flip_x = false;
 	} 
 	if(right) { 
 		AU_Vector right = au_geom_vec_scl(unit_left, -walk_speed);
 		player->speed = au_geom_vec_add(player->speed, right);
+		sprite->transform.flip_x = true;
 	}
 	if(up && supported) {
 		player->speed = au_geom_vec_add(player->speed, au_geom_vec_scl(unit_pointer, -8));

@@ -71,8 +71,11 @@ void game_loop(AU_Engine* eng) {
 	size_t num_planets = sizeof(planets) / sizeof(planets[0]);
 	while(eng->should_continue) {
 		au_begin(eng, AU_WHITE);
-		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], 
-				eng->current_keys[SDL_SCANCODE_D], eng->current_keys[SDL_SCANCODE_W], eng->current_keys[SDL_SCANCODE_S]);
+		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D], 
+				eng->current_keys[SDL_SCANCODE_W] && !eng->previous_keys[SDL_SCANCODE_W], 
+				eng->current_keys[SDL_SCANCODE_S] && !eng->previous_keys[SDL_SCANCODE_S]);
+		eng->camera.x = player.size.x - eng->camera.width / 2;
+		eng->camera.y = player.size.y - eng->camera.height / 2;
 		au_draw_circle(eng, AU_RED, player.size);
 		for(size_t i = 0; i < num_planets; i++) {
 			au_draw_circle(eng, AU_BLUE, planets[i].size);

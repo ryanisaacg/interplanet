@@ -52,7 +52,7 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 		player->size.x += embed.x;
 		player->size.y += embed.y;
 	}
-	supported = au_geom_vec_len2(pointer(player, closest)) - 5 <= rad * rad;
+	supported = au_geom_vec_len2(pointer(player, closest)) - 10 <= rad * rad;
 	player->slamming = player->slamming && !supported;
 	const float walk_speed = 3;
 	AU_Vector unit_left = { -unit_pointer.y, unit_pointer.x };

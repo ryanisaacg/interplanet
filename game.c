@@ -28,8 +28,12 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	}
 	AU_Vector unit_pointer = au_geom_vec_nor(pointer(player, closest));
 	AU_Vector gravity = au_geom_vec_scl(unit_pointer, closest->gravity);
+	float rad = player->size.radius + closest->size.radius;
 	player->accel = gravity;
 	player->speed = au_geom_vec_add(player->speed, player->accel);
+	if(au_geom_vec_len2(pointer(player, closest)) <= rad * rad) {
+		player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_pointer, au_geom_vec_dot(player->speed, unit_pointer)));
+	}
 	const float walk_speed = 0.25;
 	AU_Vector unit_left = { unit_pointer.y, -unit_pointer.x };
 	if(left) {
@@ -42,20 +46,22 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	}
 	player->size.x += player->speed.x;
 	player->size.y += player->speed.y;
-	if(au_geom_circ_overlaps_circ(player->size, closest->size)) {
-		player->size.x -= player->speed.x;
-		player->size.y -= player->speed.y;
-	}
 }
 
 void game_loop(AU_Engine* eng) {
 	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 } };
-	Planet planet = { { 100, 400, 128 }, 0.05f };
+	Planet planets[] = {
+		{ { 100, 400, 128 }, 0.05f },
+		{ { 600, 400, 128}, 0.05f },
+	};
+	size_t num_planets = sizeof(planets) / sizeof(planets[0]);
 	while(eng->should_continue) {
 		au_begin(eng, AU_WHITE);
-		player_update(&player, &planet, 1, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D]);
+		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D]);
 		au_draw_circle(eng, AU_RED, player.size);
-		au_draw_circle(eng, AU_BLUE, planet.size);
+		for(size_t i = 0; i < num_planets; i++) {
+			au_draw_circle(eng, AU_BLUE, planets[i].size);
+		}
 		au_end(eng);
 	}
 }

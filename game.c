@@ -166,7 +166,7 @@ void game_loop(AU_Engine* eng) {
 	}
 	//Main loop
 	while(eng->should_continue) {
-		au_begin(eng, AU_WHITE);
+		au_begin(eng, AU_BLACK);
 		player_update(&player, planets, num_planets, eng->current_keys[SDL_SCANCODE_A], eng->current_keys[SDL_SCANCODE_D], 
 				eng->current_keys[SDL_SCANCODE_W] && !eng->previous_keys[SDL_SCANCODE_W], 
 				eng->current_keys[SDL_SCANCODE_S] && !eng->previous_keys[SDL_SCANCODE_S],

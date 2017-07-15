@@ -8,6 +8,7 @@ typedef struct {
 typedef struct {
 	AU_Circle size;
 	AU_Vector speed, accel;
+	bool slamming;
 } Player;
 
 static AU_Vector pointer(Player* player, Planet* planet) {
@@ -41,6 +42,7 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 		player->size.y += embed.y;
 	}
 	supported = au_geom_vec_len2(pointer(player, closest)) - 5 <= rad * rad;
+	player->slamming = player->slamming && !supported;
 	const float walk_speed = 3;
 	AU_Vector unit_left = { -unit_pointer.y, unit_pointer.x };
 	player->speed = au_geom_vec_sub(player->speed, au_geom_vec_scl(unit_left, au_geom_vec_dot(player->speed, unit_left)));
@@ -55,15 +57,16 @@ static void player_update(Player* player, Planet* planets, size_t length, bool l
 	if(up && supported) {
 		player->speed = au_geom_vec_add(player->speed, au_geom_vec_scl(unit_pointer, -8));
 	}
-	if(down && !supported) {
+	if(down && !supported && !player->slamming) {
 		player->speed = au_geom_vec_add(player->speed, au_geom_vec_scl(unit_pointer, 8));
+		player->slamming = true;
 	}
 	player->size.x += player->speed.x;
 	player->size.y += player->speed.y;
 }
 
 void game_loop(AU_Engine* eng) {
-	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 } };
+	Player player = { { 400, 400, 32 }, { 0, 0 }, { 0, 0 }, false };
 	const size_t num_planets = 1000;
 	Planet* planets =  malloc(sizeof(Planet) * num_planets);
 	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f };

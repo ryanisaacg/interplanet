@@ -164,7 +164,7 @@ void game_loop(AU_Engine* eng) {
 	first.transform.origin_x = 100;
 	first.transform.origin_y = 400;
 	first.transform.rotation = au_util_randf_range(0, 360);
-	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f };
+	planets[0] = (Planet) { { 100, 400, 128 }, 0.25f, first };
 	float depth = 1;
 	for(size_t i = 1; i < num_planets; i++) {
 		planets[i].size.x = au_util_randf_range(-5000, 5000);
@@ -200,12 +200,13 @@ void game_loop(AU_Engine* eng) {
 				&player_sprite);
 		eng->camera.x = player.size.x - eng->camera.width / 2;
 		eng->camera.y = player.size.y - eng->camera.height / 2;
-		AU_Color col = AU_BLUE;
-		if(player.iframes > 0) col.r = 0.5f;
+		AU_Color col = AU_WHITE;
+		if(player.iframes > 0) col.g = col.b = 0;
 		player_sprite.transform.x = player.size.x - player_sprite.transform.width / 2;
 		player_sprite.transform.y = player.size.y - player_sprite.transform.height / 2;
 		player_sprite.transform.origin_x = player_sprite.transform.x + player_sprite.transform.width / 2;
 		player_sprite.transform.origin_y = player_sprite.transform.y + player_sprite.transform.height / 2;
+		player_sprite.transform.color = col;
 		au_draw_sprite_animated(eng, &player_sprite);
 		for(size_t i = 0; i < num_planets; i++) {
 			au_draw_sprite(eng, &(planets[i].sprite));
@@ -220,6 +221,7 @@ void game_loop(AU_Engine* eng) {
 			}
 			au_draw_sprite_animated(eng, &(enemies[i].sprite));
 		}
+		au_draw_rect_depth(eng, AU_RED, (AU_Rectangle) { player.size.x - 16, player.size.y - 20, player.health / 4, 4 }, 0);
 		printf("%s\n", Mix_GetError());
 		au_end(eng);
 	}

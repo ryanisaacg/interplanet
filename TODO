@@ -1,14 +1,11 @@
 - Game design
-	- Rotate the camera so the player is always facing up
-	- Jetpack for when the player is out of the planet's gravitational field
 	- Place planets with a better algorithm
-	- Space eels that move between planets
 	- Breakable planets with rewards
 	- Planets that can hurt you
 	- Fixed point hazards
 	- Portals that move you to the next level
 - Art assets
-	- Space eels enemies
+	- Floating spiky thing
 	- Breakable planets
 	- Lava planets
 	- Wormholes
